@@ -1,0 +1,36 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/theme_preference">
+
+        <SwitchPreferenceCompat
+            app:key="@string/dark_theme"
+            app:summaryOff="@string/dark_theme_off"
+            app:summaryOn="@string/dark_theme_on"
+            app:title="@string/dark_theme" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/browsing_settings">
+
+        <ListPreference
+            app:defaultValue="@string/preferred_search_engine_def_value"
+            app:entries="@array/preferred_search_engine_names"
+            app:entryValues="@array/preferred_search_engine_values"
+            app:key="@string/preferred_search_engine"
+            app:title="@string/preferred_search_engine" />
+
+        <SwitchPreferenceCompat
+            app:key="@string/startup_tabs"
+            app:summaryOff="@string/startup_tabs_off"
+            app:summaryOn="@string/startup_tabs_on"
+            app:title="@string/startup_tabs"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:key="@string/javascript_enabled"
+            app:summary="@string/js_enable_summary"
+            app:title="@string/javascript_enabled" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

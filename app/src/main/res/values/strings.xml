@@ -7,4 +7,42 @@
     <string name="settings">Settings</string>
     <string name="next">Next</string>
     <string name="search_button">Search Button</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="browsing_settings">Browsing Settings</string>
+    <string name="theme_preference">Theme Preference</string>
+    <string name="preferred_search_engine">Preferred Search Engine</string>
+
+    <!-- Browsing Settings Preferences -->
+    <string name="javascript_enabled">Enable JavaScript</string>
+    <string name="js_enable_summary">Enabling JavaScript may make the browser vulnerable to malicious attacks</string>
+    <string name="startup_tabs">Startup Tabs</string>
+    <string name="startup_tabs_on">Open tabs on startup</string>
+    <string name="startup_tabs_off">Do not open tabs on startup</string>
+
+    <string name="preferred_search_engine_def_value">https://www.google.com/</string>
+
+    <string-array name="preferred_search_engine_names">
+        <item>Google</item>
+        <item>Bing</item>
+        <item>Yahoo</item>
+        <item>DuckDuckGo</item>
+        <item>Ask.com</item>
+    </string-array>
+
+    <string-array name="preferred_search_engine_values">
+        <item>https://www.google.com/</item>
+        <item>https://www.bing.com/</item>
+        <item>https://www.yahoo.com/</item>
+        <item>https://duckduckgo.com/</item>
+        <item>http://www.ask.com/</item>
+    </string-array>
+
+    <!-- Theme Preferences -->
+    <string name="dark_theme">Dark Mode</string>
+    <string name="dark_theme_on">Dark Theme Enabled</string>
+    <string name="dark_theme_off">Light Theme Enabled</string>
 </resources>
