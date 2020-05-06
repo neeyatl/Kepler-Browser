@@ -3,10 +3,15 @@ package com.aurumtechie.keplerbrowser
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import android.os.Message
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.webkit.CookieManager
+import android.webkit.WebChromeClient
 import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.ProgressBar
 import androidx.core.view.NestedScrollingChild2
 import androidx.core.view.NestedScrollingChildHelper
 import androidx.core.view.ViewCompat
@@ -100,5 +105,40 @@ class NestedScrollWebView(context: Context, attrs: AttributeSet) : WebView(conte
         offsetInWindow,
         type
     )
+}
 
+class KeplerWebViewClient : WebViewClient() {
+    override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+        view?.loadUrl(url)
+        CookieManager.getInstance().setAcceptCookie(true)
+        return true
+    }
+
+    // TODO: UPDATE the search bar with the URL of the new page that is opened
+}
+
+class KeplerWebChromeClient(private val progressBar: ProgressBar) : WebChromeClient() {
+    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+        super.onProgressChanged(view, newProgress)
+
+        progressBar.progress = newProgress
+        if (newProgress < 100 && progressBar.visibility == ProgressBar.GONE)
+            progressBar.visibility = ProgressBar.VISIBLE
+
+        if (newProgress == 100)
+            progressBar.visibility = ProgressBar.GONE
+        else
+            progressBar.visibility = ProgressBar.VISIBLE
+    }
+
+    //  TODO: Create a new window and open the link there
+    override fun onCreateWindow(
+        view: WebView?,
+        isDialog: Boolean,
+        isUserGesture: Boolean,
+        resultMsg: Message?
+    ): Boolean {
+        if (!isUserGesture) return false
+        return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+    }
 }

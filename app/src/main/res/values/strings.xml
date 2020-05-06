@@ -45,4 +45,11 @@
     <string name="dark_theme">Dark Mode</string>
     <string name="dark_theme_on">Dark Theme Enabled</string>
     <string name="dark_theme_off">Light Theme Enabled</string>
+
+    <!-- Menu Items -->
+    <string name="bookmarks">Bookmarks</string>
+    <string name="saved_pages">Saved Pages</string>
+    <string name="history">History</string>
+    <string name="about">About</string>
+
 </resources>
