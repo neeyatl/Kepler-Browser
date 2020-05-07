@@ -11,6 +11,7 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
         android:max="100"
         android:theme="@style/ProgressBarColor"
         android:visibility="visible" />
@@ -25,7 +26,7 @@
             android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/searchToolbar"
+                android:id="@+id/defaultToolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:contentInsetEnd="0dp"
@@ -34,25 +35,76 @@
                 app:contentInsetStart="0dp"
                 app:layout_scrollFlags="scroll|enterAlways">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="match_parent"
+                        android:background="@color/light_violet"
+                        android:contentDescription="@string/search_button"
+                        android:onClick="onSearchButtonClicked"
+                        android:src="@drawable/search_button" />
+
+                    <ImageButton
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="match_parent"
+                        android:background="@color/light_violet"
+                        android:contentDescription="@string/bookmarks"
+                        android:onClick="onAddToBookmarksClicked"
+                        android:src="@drawable/add_to_bookmarks" />
+
+                    <ImageButton
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="match_parent"
+                        android:background="@color/light_violet"
+                        android:contentDescription="@string/save_page"
+                        android:onClick="onSavePageClicked"
+                        android:src="@drawable/file_download" />
+
+                </LinearLayout>
+            </androidx.appcompat.widget.Toolbar>
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/searchToolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:visibility="gone"
+                app:contentInsetEnd="0dp"
+                app:contentInsetLeft="0dp"
+                app:contentInsetRight="0dp"
+                app:contentInsetStart="0dp"
+                app:layout_scrollFlags="scroll|enterAlways">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
                     android:padding="2dp">
 
                     <EditText
                         android:id="@+id/searchEditText"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:hint="@string/enter_url_or_keywords"
                         android:imeOptions="actionDone"
                         android:importantForAutofill="no"
                         android:inputType="text|textAutoComplete"
-                        android:singleLine="true"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        android:singleLine="true" />
+
+                    <ImageButton
+                        android:id="@+id/cancelSearchBtn"
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="match_parent"
+                        android:background="@color/light_violet"
+                        android:contentDescription="@android:string/cancel"
+                        android:onClick="onCancelSearchClicked"
+                        android:src="@drawable/close" />
+                </LinearLayout>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
 

@@ -16,7 +16,7 @@ class KeplerDatabaseHelper(context: Context) :
         const val BOOKMARKS = "Bookmarks"
         const val SAVED_PAGES = "SavedPages"
 
-        fun SQLiteDatabase.insertWebpage(
+        fun SQLiteDatabase.insertWebPage(
             table: String,
             title: String,
             url: String/*, imageBits: ByteArray*/,
@@ -26,18 +26,18 @@ class KeplerDatabaseHelper(context: Context) :
             webPageDataValues.put("title", title)
             webPageDataValues.put("url", url)
 //        webPageDataValues.put("imageBits", imageBits)
-            if (table == HISTORY) webPageDataValues.put("timeInMillis", timeInMillis)
+            webPageDataValues.put("timeInMillis", timeInMillis)
 
             return this.insert(table, null, webPageDataValues)
         }
-
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         // TODO: ADD support to save image bits if possible
-        db?.execSQL("CREATE TABLE Bookmarks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT);")
-        db?.execSQL("CREATE TABLE SavedPages (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT);")
-        db?.execSQL("CREATE TABLE History (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);") // TODO: Replace with LONG if possible
+        // TODO: Replace timeInMillis Integer with LONG if possible
+        db?.execSQL("CREATE TABLE Bookmarks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
+        db?.execSQL("CREATE TABLE SavedPages (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
+        db?.execSQL("CREATE TABLE History (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {

@@ -2,6 +2,7 @@ package com.aurumtechie.keplerbrowser
 
 import android.content.Context
 import android.content.Intent
+import android.database.sqlite.SQLiteException
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -11,10 +12,13 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.BOOKMARKS
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.HISTORY
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.SAVED_PAGES
+import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
 import com.aurumtechie.keplerbrowser.WebPagesListActivity.Companion.EXTRA_STRING
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,17 +29,18 @@ class MainActivity : AppCompatActivity(),
 
     private val settingsPreference by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
-    private val buttonClick = AlphaAnimation(1F, 0.2F).apply { duration = 100 }
+    private val buttonClick = AlphaAnimation(0.2F, 1F).apply { duration = 100 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // TODO: ADD support for startup tabs using settings preference
-        setSupportActionBar(searchToolbar)
+        setSupportActionBar(defaultToolbar)
+
         searchEditText.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onSearchClicked(v)
+                onSearchStarted(v)
                 true
             } else false
         }
@@ -47,7 +52,20 @@ class MainActivity : AppCompatActivity(),
                 .commit()
     }
 
-    private fun onSearchClicked(view: View) {
+    fun onSearchButtonClicked(view: View) {
+        view.startAnimation(buttonClick)
+        defaultToolbar.visibility = Toolbar.GONE
+        searchToolbar.visibility = Toolbar.VISIBLE
+        setSupportActionBar(searchToolbar)
+    }
+
+    private fun switchActionBar() {
+        searchToolbar.visibility = Toolbar.GONE
+        defaultToolbar.visibility = Toolbar.VISIBLE
+        setSupportActionBar(defaultToolbar)
+    }
+
+    private fun onSearchStarted(view: View) {
         view.startAnimation(buttonClick)
         try {
             if (!ConnectivityHelper.isConnectedToNetwork(this@MainActivity)) {
@@ -92,6 +110,8 @@ class MainActivity : AppCompatActivity(),
 
     fun onPreviousClicked(view: View) {
         view.startAnimation(buttonClick)
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
         if (webView.canGoBack()) webView.goBack()
     }
 
@@ -103,19 +123,21 @@ class MainActivity : AppCompatActivity(),
         supportFragmentManager.beginTransaction().replace(
             R.id.tabContainer,
             OpenTabsFragment(openTabs.toList())
-        ).commit()
+        ).apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN) }.commit()
     }
 
     fun onNextClicked(view: View) {
         view.startAnimation(buttonClick)
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
         if (webView.canGoForward()) webView.goForward()
     }
 
     override fun onTabClick(view: View, position: Int) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.tabContainer, supportFragmentManager.fragments[position])
-            .addToBackStack(null)
-            .commit()
+            .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE) }
+            .addToBackStack(null).commit()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -124,6 +146,13 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.new_tab -> {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.tabContainer, WebViewTabFragment())
+                .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN) }
+                .addToBackStack(null).commit()
+            true
+        }
         R.id.bookmarks -> {
             startActivity(Intent(this, WebPagesListActivity::class.java).apply {
                 putExtra(
@@ -165,6 +194,49 @@ class MainActivity : AppCompatActivity(),
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    fun onAddToBookmarksClicked(view: View) {
+        view.startAnimation(buttonClick)
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+        // TODO: Use Coroutines here
+        try {
+            KeplerDatabaseHelper(this).writableDatabase?.insertWebPage(
+                BOOKMARKS,
+                webView.title,
+                webView.url
+            )
+        } catch (e: SQLiteException) {
+            Toast.makeText(this, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
+                .show()
+            e.printStackTrace()
+        }
+    }
+
+    fun onSavePageClicked(view: View) {
+        view.startAnimation(buttonClick)
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+        // TODO: Download file using Coroutines
+        try {
+            KeplerDatabaseHelper(this).writableDatabase?.insertWebPage(
+                SAVED_PAGES,
+                webView.title,
+                webView.url // TODO: Add device storage filepath here
+            )
+        } catch (e: SQLiteException) {
+            Toast.makeText(this, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
+                .show()
+            e.printStackTrace()
+        }
+    }
+
+    fun onCancelSearchClicked(view: View) {
+        view.startAnimation(buttonClick)
+        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+            .apply { if (isActive) hideSoftInputFromWindow(searchEditText.windowToken, 0) }
+        switchActionBar()
     }
 
 }

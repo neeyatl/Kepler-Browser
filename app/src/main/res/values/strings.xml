@@ -51,5 +51,8 @@
     <string name="saved_pages">Saved Pages</string>
     <string name="history">History</string>
     <string name="about">About</string>
+    <string name="add_to_bookmarks">Add to Bookmarks</string>
+    <string name="save_page">Save Page</string>
+    <string name="new_tab">New Tab</string>
 
 </resources>
