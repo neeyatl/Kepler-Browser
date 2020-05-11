@@ -5,4 +5,6 @@
     <color name="colorAccent">#4ED1C5</color>
 
     <color name="light_violet">#B3B27DFF</color>
+
+    <color name="very_light_grey">#B1B1B1</color>
 </resources>

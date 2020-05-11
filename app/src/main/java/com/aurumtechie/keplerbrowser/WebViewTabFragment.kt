@@ -2,11 +2,13 @@ package com.aurumtechie.keplerbrowser
 
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_main.*
@@ -43,6 +45,12 @@ class WebViewTabFragment : Fragment() {
         else loadHomePage(webView)
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (activity?.progressBar?.visibility == ProgressBar.VISIBLE)
+            activity?.progressBar?.visibility = ProgressBar.GONE
+    }
+
     private fun loadHomePage(webView: WebView) = webView.loadUrl(
         settingsPreference.getString(
             resources.getString(R.string.preferred_search_engine),
@@ -51,6 +59,9 @@ class WebViewTabFragment : Fragment() {
     )
 
     private fun setUpWebView(webView: WebView) {
+        webView.webChromeClient = activity?.progressBar?.let { KeplerWebChromeClient(it) }
+        webView.webViewClient = KeplerWebViewClient
+
         webView.settings.javaScriptEnabled =
             settingsPreference.getBoolean("javascript_enabled", false)
         webView.settings.useWideViewPort = true
@@ -60,10 +71,12 @@ class WebViewTabFragment : Fragment() {
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
         webView.setBackgroundColor(
             if (settingsPreference.getBoolean(resources.getString(R.string.dark_theme), false))
-                Color.BLACK else Color.WHITE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                    resources.getColor(R.color.very_light_grey, resources.newTheme())
+                else
+                    resources.getColor(R.color.very_light_grey)
+            else Color.WHITE
         )
-        webView.webChromeClient = activity?.progressBar?.let { KeplerWebChromeClient(it) }
-        webView.webViewClient = KeplerWebViewClient()
     }
 
 }

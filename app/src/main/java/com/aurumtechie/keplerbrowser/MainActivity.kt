@@ -145,12 +145,16 @@ class MainActivity : AppCompatActivity(),
         return super.onCreateOptionsMenu(menu)
     }
 
+    private fun startNewTab() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.tabContainer, WebViewTabFragment())
+            .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN) }
+            .addToBackStack(null).commit()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.new_tab -> {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.tabContainer, WebViewTabFragment())
-                .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN) }
-                .addToBackStack(null).commit()
+            startNewTab()
             true
         }
         R.id.bookmarks -> {

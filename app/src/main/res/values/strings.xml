@@ -54,5 +54,6 @@
     <string name="add_to_bookmarks">Add to Bookmarks</string>
     <string name="save_page">Save Page</string>
     <string name="new_tab">New Tab</string>
+    <string name="clear_all_tabs">Clear All Tabs</string>
 
 </resources>

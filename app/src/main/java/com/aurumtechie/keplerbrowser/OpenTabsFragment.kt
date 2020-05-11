@@ -13,6 +13,8 @@ import kotlinx.android.synthetic.main.tabs_item_web_view_layout.view.*
 
 class OpenTabsFragment(private val openTabs: List<WebViewTabFragment>) : Fragment() {
 
+    constructor() : this(listOf())
+
     private lateinit var onTabClickListener: AllOpenTabsRecyclerViewAdapter.Companion.OnTabClickListener
 
     override fun onAttach(context: Context) {

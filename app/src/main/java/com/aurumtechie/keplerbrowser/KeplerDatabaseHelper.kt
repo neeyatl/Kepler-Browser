@@ -21,10 +21,11 @@ class KeplerDatabaseHelper(context: Context) :
             table: String, title: String, url: String,
             timeInMillis: Long = currentTimeMillis()
         ): Long {
-            val webPageDataValues = ContentValues()
-            webPageDataValues.put("title", title)
-            webPageDataValues.put("url", url)
-            webPageDataValues.put("timeInMillis", timeInMillis)
+            val webPageDataValues = ContentValues().apply {
+                put("title", title)
+                put("url", url)
+                put("timeInMillis", timeInMillis)
+            }
             return insert(table, null, webPageDataValues)
         }
 
