@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.lang.System.currentTimeMillis
 
 class KeplerDatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
@@ -17,24 +18,21 @@ class KeplerDatabaseHelper(context: Context) :
         const val SAVED_PAGES = "SavedPages"
 
         fun SQLiteDatabase.insertWebPage(
-            table: String,
-            title: String,
-            url: String/*, imageBits: ByteArray*/,
-            timeInMillis: Long = System.currentTimeMillis() // TODO: Replace with Kotlin equivalent of this
+            table: String, title: String, url: String,
+            timeInMillis: Long = currentTimeMillis()
         ): Long {
             val webPageDataValues = ContentValues()
             webPageDataValues.put("title", title)
             webPageDataValues.put("url", url)
-//        webPageDataValues.put("imageBits", imageBits)
             webPageDataValues.put("timeInMillis", timeInMillis)
-
-            return this.insert(table, null, webPageDataValues)
+            return insert(table, null, webPageDataValues)
         }
+
+        fun SQLiteDatabase.removeWebPage(table: String, title: String, url: String): Int =
+            delete(table, "title = ? AND url = ?", arrayOf(title, url))
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        // TODO: ADD support to save image bits if possible
-        // TODO: Replace timeInMillis Integer with LONG if possible
         db?.execSQL("CREATE TABLE Bookmarks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
         db?.execSQL("CREATE TABLE SavedPages (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
         db?.execSQL("CREATE TABLE History (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")

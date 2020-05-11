@@ -14,12 +14,14 @@ import kotlinx.android.synthetic.main.fragment_web_view_tab.*
 
 class WebViewTabFragment : Fragment() {
 
+    var url: String? = null
+
     private val settingsPreference: SharedPreferences by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     companion object {
-        fun getInstance(url: String) = WebViewTabFragment().apply { this.webView.loadUrl(url) }
+        fun getInstance(url: String) = WebViewTabFragment().apply { this.url = url }
     }
 
     override fun onCreateView(
@@ -30,11 +32,15 @@ class WebViewTabFragment : Fragment() {
             inflater.inflate(R.layout.fragment_web_view_tab, container, false) as WebView
         if (savedInstanceState != null)
             nestedScrollingWebView.restoreState(savedInstanceState)
-        else {
+        else
             setUpWebView(nestedScrollingWebView)
-            loadHomePage(nestedScrollingWebView)
-        }
         return nestedScrollingWebView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (url != null) webView.loadUrl(url)
+        else loadHomePage(webView)
     }
 
     private fun loadHomePage(webView: WebView) = webView.loadUrl(
@@ -56,7 +62,6 @@ class WebViewTabFragment : Fragment() {
             if (settingsPreference.getBoolean(resources.getString(R.string.dark_theme), false))
                 Color.BLACK else Color.WHITE
         )
-
         webView.webChromeClient = activity?.progressBar?.let { KeplerWebChromeClient(it) }
         webView.webViewClient = KeplerWebViewClient()
     }
