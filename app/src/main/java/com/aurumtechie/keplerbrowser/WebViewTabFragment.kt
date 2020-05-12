@@ -73,8 +73,7 @@ class WebViewTabFragment : Fragment() {
             if (settingsPreference.getBoolean(resources.getString(R.string.dark_theme), false))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                     resources.getColor(R.color.very_light_grey, resources.newTheme())
-                else
-                    resources.getColor(R.color.very_light_grey)
+                else Color.LTGRAY
             else Color.WHITE
         )
     }

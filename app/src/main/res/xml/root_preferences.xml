@@ -2,11 +2,13 @@
 
     <PreferenceCategory app:title="@string/theme_preference">
 
-        <SwitchPreferenceCompat
+        <ListPreference
+            app:defaultValue="@string/dark_mode_def_value"
+            app:entries="@array/dark_mode_entries"
+            app:entryValues="@array/dark_mode_values"
             app:key="@string/dark_theme"
-            app:summaryOff="@string/dark_theme_off"
-            app:summaryOn="@string/dark_theme_on"
-            app:title="@string/dark_theme" />
+            app:title="@string/dark_theme"
+            app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
 
@@ -17,7 +19,8 @@
             app:entries="@array/preferred_search_engine_names"
             app:entryValues="@array/preferred_search_engine_values"
             app:key="@string/preferred_search_engine"
-            app:title="@string/preferred_search_engine" />
+            app:title="@string/preferred_search_engine"
+            app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
             app:key="@string/startup_tabs"

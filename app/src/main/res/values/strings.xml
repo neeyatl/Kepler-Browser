@@ -25,26 +25,9 @@
 
     <string name="preferred_search_engine_def_value">https://www.google.com/</string>
 
-    <string-array name="preferred_search_engine_names">
-        <item>Google</item>
-        <item>Bing</item>
-        <item>Yahoo</item>
-        <item>DuckDuckGo</item>
-        <item>Ask.com</item>
-    </string-array>
-
-    <string-array name="preferred_search_engine_values">
-        <item>https://www.google.com/</item>
-        <item>https://www.bing.com/</item>
-        <item>https://www.yahoo.com/</item>
-        <item>https://duckduckgo.com/</item>
-        <item>http://www.ask.com/</item>
-    </string-array>
-
     <!-- Theme Preferences -->
     <string name="dark_theme">Dark Mode</string>
-    <string name="dark_theme_on">Dark Theme Enabled</string>
-    <string name="dark_theme_off">Light Theme Enabled</string>
+    <string name="dark_mode_def_value">MODE_NIGHT_FOLLOW_SYSTEM</string>
 
     <!-- Menu Items -->
     <string name="bookmarks">Bookmarks</string>
