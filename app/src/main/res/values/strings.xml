@@ -39,4 +39,7 @@
     <string name="new_tab">New Tab</string>
     <string name="clear_all_tabs">Clear All Tabs</string>
 
+    <string name="successfully_added">Successfully Added!</string>
+    <string name="undo">UNDO</string>
+    <string name="undone">Undone!</string>
 </resources>

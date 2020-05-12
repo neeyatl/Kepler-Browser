@@ -113,8 +113,6 @@ object KeplerWebViewClient : WebViewClient() {
         CookieManager.getInstance().setAcceptCookie(true)
         return true
     }
-
-    // TODO: UPDATE the search bar with the URL of the new page that is opened
 }
 
 class KeplerWebChromeClient(private val progressBar: ProgressBar) : WebChromeClient() {

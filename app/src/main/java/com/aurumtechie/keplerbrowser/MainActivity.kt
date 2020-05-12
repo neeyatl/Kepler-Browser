@@ -19,10 +19,15 @@ import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.BOOKMARKS
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.HISTORY
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.SAVED_PAGES
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
+import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.removeWebPage
 import com.aurumtechie.keplerbrowser.WebPagesListActivity.Companion.EXTRA_STRING
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_web_view_tab.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity(),
     AllOpenTabsRecyclerViewAdapter.Companion.OnTabClickListener {
@@ -204,17 +209,31 @@ class MainActivity : AppCompatActivity(),
         view.startAnimation(buttonClick)
         val webView =
             (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
-        // TODO: Use Coroutines here
-        try {
-            KeplerDatabaseHelper(this).writableDatabase?.insertWebPage(
-                BOOKMARKS,
-                webView.title,
-                webView.url
-            )
-        } catch (e: SQLiteException) {
-            Toast.makeText(this, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
-                .show()
-            e.printStackTrace()
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val db = KeplerDatabaseHelper(this@MainActivity).writableDatabase
+                val result: Long = db?.insertWebPage(
+                    BOOKMARKS,
+                    webView.title,
+                    webView.url
+                )!! // SQLiteDatabase.insert() is a non nullable function but is implemented in Java and hence the Long? type.
+                withContext(Dispatchers.Main) {
+                    if (result != -1L)
+                        Snackbar.make(view, "Successfully Added!", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                if (db.removeWebPage(BOOKMARKS, webView.title, webView.url) == 1)
+                                    Toast.makeText(this@MainActivity, "Undone!", Toast.LENGTH_SHORT)
+                                        .show()
+                            }.show()
+                }
+            } catch (e: SQLiteException) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Database Unavailable: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                e.printStackTrace()
+            }
         }
     }
 
@@ -223,16 +242,31 @@ class MainActivity : AppCompatActivity(),
         val webView =
             (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
         // TODO: Download file using Coroutines
-        try {
-            KeplerDatabaseHelper(this).writableDatabase?.insertWebPage(
-                SAVED_PAGES,
-                webView.title,
-                webView.url // TODO: Add device storage filepath here
-            )
-        } catch (e: SQLiteException) {
-            Toast.makeText(this, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
-                .show()
-            e.printStackTrace()
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val db = KeplerDatabaseHelper(this@MainActivity).writableDatabase
+                val result: Long = db?.insertWebPage(
+                    SAVED_PAGES,
+                    webView.title,
+                    webView.url
+                )!! // SQLiteDatabase.insert() is a non nullable function but is implemented in Java and hence the Long? type.
+                withContext(Dispatchers.Main) {
+                    if (result != -1L)
+                        Snackbar.make(view, "Successfully Added!", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                if (db.removeWebPage(SAVED_PAGES, webView.title, webView.url) == 1)
+                                    Toast.makeText(this@MainActivity, "Undone!", Toast.LENGTH_SHORT)
+                                        .show()
+                            }.show()
+                }
+            } catch (e: SQLiteException) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Database Unavailable: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                e.printStackTrace()
+            }
         }
     }
 

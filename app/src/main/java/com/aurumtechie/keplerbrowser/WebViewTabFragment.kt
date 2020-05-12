@@ -2,7 +2,6 @@ package com.aurumtechie.keplerbrowser
 
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -69,13 +68,7 @@ class WebViewTabFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.setSupportMultipleWindows(true)
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
-        webView.setBackgroundColor(
-            if (settingsPreference.getBoolean(resources.getString(R.string.dark_theme), false))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                    resources.getColor(R.color.very_light_grey, resources.newTheme())
-                else Color.LTGRAY
-            else Color.WHITE
-        )
+        webView.setBackgroundColor(Color.WHITE)
     }
 
 }

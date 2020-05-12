@@ -12,6 +12,10 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.ListFragment
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.HISTORY
 import kotlinx.android.synthetic.main.activity_web_pages_list.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WebPagesListActivity : AppCompatActivity() {
 
@@ -46,32 +50,37 @@ class WebPagesListFragment : ListFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-//        TODO("USE Coroutines to do the database tasks in the background")
+
         val progressBar = ProgressBar(context).apply { visibility = ProgressBar.VISIBLE }
 
-        val cursor = try {
-            context?.let { KeplerDatabaseHelper(it) }?.readableDatabase?.query(
-                table,
-                arrayOf("_id", "title", "url"),
-                null,
-                null,
-                null,
-                null,
+        CoroutineScope(Dispatchers.Default).launch {
+            val cursor = try {
+                context?.let { KeplerDatabaseHelper(it) }?.readableDatabase?.query(
+                    table,
+                    arrayOf("_id", "title", "url"),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                )
+            } catch (e: SQLiteException) {
+                Toast.makeText(context, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+                e.printStackTrace()
                 null
-            )
-        } catch (e: SQLiteException) {
-            Toast.makeText(context, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
-            null
-        }
+            }
 
-        progressBar.visibility = ProgressBar.GONE
+            withContext(Dispatchers.Main) {
+                progressBar.visibility = ProgressBar.GONE
 
-        cursor?.let {
-            listAdapter = SimpleCursorAdapter(
-                context, R.layout.web_page_list_item, it, arrayOf("title", "url"),
-                intArrayOf(R.id.title, R.id.url), 0
-            )
+                cursor?.let {
+                    listAdapter = SimpleCursorAdapter(
+                        context, R.layout.web_page_list_item, it, arrayOf("title", "url"),
+                        intArrayOf(R.id.title, R.id.url), 0
+                    )
+                }
+            }
         }
         return super.onCreateView(inflater, container, savedInstanceState)
     }
