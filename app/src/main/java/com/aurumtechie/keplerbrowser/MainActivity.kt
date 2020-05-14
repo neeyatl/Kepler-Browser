@@ -37,7 +37,6 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // TODO: ADD support for startup tabs using settings preference
         setSupportActionBar(defaultToolbar)
 
         searchEditText.setOnEditorActionListener { v, actionId, _ ->

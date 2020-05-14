@@ -109,9 +109,13 @@ class NestedScrollWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
 object KeplerWebViewClient : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-        view?.loadUrl(url)
-        CookieManager.getInstance().setAcceptCookie(true)
-        return true
+        url?.let {
+            if (it.startsWith("https://")) {
+                view?.loadUrl(url)
+                CookieManager.getInstance().setAcceptCookie(true)
+            }
+        }
+        return false
     }
 }
 
