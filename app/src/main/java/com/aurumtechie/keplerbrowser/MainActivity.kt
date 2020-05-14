@@ -205,13 +205,14 @@ class MainActivity : AppCompatActivity(),
         view.startAnimation(buttonClick)
         val webView =
             (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+        val title = webView.title
+        val url = webView.url
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 val db = KeplerDatabaseHelper(this@MainActivity).writableDatabase
                 val result: Long = db?.insertWebPage(
                     KeplerDatabaseHelper.Companion.WebPageListItems.BOOKMARKS,
-                    webView.title,
-                    webView.url
+                    title, url
                 )!! // SQLiteDatabase.insert() is a non nullable function but is implemented in Java and hence the Long? type.
                 withContext(Dispatchers.Main) {
                     if (result != -1L)
@@ -240,15 +241,17 @@ class MainActivity : AppCompatActivity(),
 
     fun onSavePageClicked(view: View) {
         view.startAnimation(buttonClick)
-        val webView =
-            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+//        val webView =
+//            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+//        val title = webView.title
+//        val url = webView.url
         // TODO: Download file using Coroutines
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+//        CoroutineScope(Dispatchers.Default).launch {
+//            try {
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
     }
 
     fun onCancelSearchClicked(view: View) {

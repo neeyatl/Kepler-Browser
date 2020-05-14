@@ -1,11 +1,13 @@
 package com.aurumtechie.keplerbrowser
 
+import android.annotation.SuppressLint
 import android.database.sqlite.SQLiteException
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cursoradapter.widget.SimpleCursorAdapter
@@ -28,13 +30,25 @@ class WebPagesListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val text = intent?.getStringExtra(EXTRA_STRING)
-        supportActionBar?.title = text
-        textView.text = text
+        val selectTitle = intent?.extras?.get(EXTRA_STRING) as String
+        supportActionBar?.title = selectTitle
+
+        if (selectTitle != getString(R.string.saved_pages))
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.listFragmentContainer, WebPagesListFragment.getInstance(selectTitle))
+                .commit()
+        else
+            listFragmentContainer.addView(TextView(this).apply {
+                text = getString(R.string.saved_pages)
+            })
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed() // pop fragment back-stack
+        super.onBackPressed() // exit the activity
     }
 }
 
-// TODO: USE fragments with SimpleCursorAdapter to create and display lists of bookmarks, history, and saved pages.
 class WebPagesListFragment : ListFragment() {
 
     var table: String = KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table
@@ -52,6 +66,7 @@ class WebPagesListFragment : ListFragment() {
         val progressBar = ProgressBar(context).apply { visibility = ProgressBar.VISIBLE }
 
         CoroutineScope(Dispatchers.Default).launch {
+            @SuppressLint("Recycle")
             val cursor = try {
                 context?.let { KeplerDatabaseHelper(it) }?.readableDatabase?.query(
                     table,
