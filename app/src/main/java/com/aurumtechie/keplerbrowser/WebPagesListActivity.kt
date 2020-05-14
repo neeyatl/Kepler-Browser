@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.ListFragment
-import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.HISTORY
 import kotlinx.android.synthetic.main.activity_web_pages_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,11 +37,10 @@ class WebPagesListActivity : AppCompatActivity() {
 // TODO: USE fragments with SimpleCursorAdapter to create and display lists of bookmarks, history, and saved pages.
 class WebPagesListFragment : ListFragment() {
 
-    var table: String = HISTORY
+    var table: String = KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table
 
     companion object {
-        fun getInstance(table: String = HISTORY) =
-            WebPagesListFragment().apply { this.table = table }
+        fun getInstance(table: String) = WebPagesListFragment().apply { this.table = table }
     }
 
     override fun onCreateView(

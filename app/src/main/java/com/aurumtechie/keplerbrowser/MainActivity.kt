@@ -15,9 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
-import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.BOOKMARKS
-import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.HISTORY
-import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.SAVED_PAGES
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.removeWebPage
 import com.aurumtechie.keplerbrowser.WebPagesListActivity.Companion.EXTRA_STRING
@@ -166,7 +163,7 @@ class MainActivity : AppCompatActivity(),
             startActivity(Intent(this, WebPagesListActivity::class.java).apply {
                 putExtra(
                     EXTRA_STRING,
-                    BOOKMARKS
+                    KeplerDatabaseHelper.Companion.WebPageListItems.BOOKMARKS.table
                 )
             })
             true
@@ -175,7 +172,7 @@ class MainActivity : AppCompatActivity(),
             startActivity(Intent(this, WebPagesListActivity::class.java).apply {
                 putExtra(
                     EXTRA_STRING,
-                    SAVED_PAGES
+                    getString(R.string.saved_pages)
                 )
             })
             true
@@ -184,7 +181,7 @@ class MainActivity : AppCompatActivity(),
             startActivity(Intent(this, WebPagesListActivity::class.java).apply {
                 putExtra(
                     EXTRA_STRING,
-                    HISTORY
+                    KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table
                 )
             })
             true
@@ -213,7 +210,7 @@ class MainActivity : AppCompatActivity(),
             try {
                 val db = KeplerDatabaseHelper(this@MainActivity).writableDatabase
                 val result: Long = db?.insertWebPage(
-                    BOOKMARKS,
+                    KeplerDatabaseHelper.Companion.WebPageListItems.BOOKMARKS,
                     webView.title,
                     webView.url
                 )!! // SQLiteDatabase.insert() is a non nullable function but is implemented in Java and hence the Long? type.
@@ -221,7 +218,12 @@ class MainActivity : AppCompatActivity(),
                     if (result != -1L)
                         Snackbar.make(view, "Successfully Added!", Snackbar.LENGTH_LONG)
                             .setAction("UNDO") {
-                                if (db.removeWebPage(BOOKMARKS, webView.title, webView.url) == 1)
+                                if (db.removeWebPage(
+                                        KeplerDatabaseHelper.Companion.WebPageListItems.BOOKMARKS,
+                                        webView.title,
+                                        webView.url
+                                    ) == 1
+                                )
                                     Toast.makeText(this@MainActivity, "Undone!", Toast.LENGTH_SHORT)
                                         .show()
                             }.show()
@@ -244,27 +246,7 @@ class MainActivity : AppCompatActivity(),
         // TODO: Download file using Coroutines
         CoroutineScope(Dispatchers.Default).launch {
             try {
-                val db = KeplerDatabaseHelper(this@MainActivity).writableDatabase
-                val result: Long = db?.insertWebPage(
-                    SAVED_PAGES,
-                    webView.title,
-                    webView.url
-                )!! // SQLiteDatabase.insert() is a non nullable function but is implemented in Java and hence the Long? type.
-                withContext(Dispatchers.Main) {
-                    if (result != -1L)
-                        Snackbar.make(view, "Successfully Added!", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO") {
-                                if (db.removeWebPage(SAVED_PAGES, webView.title, webView.url) == 1)
-                                    Toast.makeText(this@MainActivity, "Undone!", Toast.LENGTH_SHORT)
-                                        .show()
-                            }.show()
-                }
-            } catch (e: SQLiteException) {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Database Unavailable: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
