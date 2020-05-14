@@ -12,9 +12,15 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.core.view.NestedScrollingChild2
 import androidx.core.view.NestedScrollingChildHelper
 import androidx.core.view.ViewCompat
+import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.sql.SQLException
 
 class NestedScrollWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs),
     NestedScrollingChild2 {
@@ -116,6 +122,24 @@ object KeplerWebViewClient : WebViewClient() {
             }
         }
         return false
+    }
+
+    override fun onPageFinished(view: WebView?, url: String?) {
+        super.onPageFinished(view, url)
+        if (view != null && url != null) {
+            val context = view.context
+            val title = view.title
+            CoroutineScope(Dispatchers.Default).launch {
+                try {
+                    KeplerDatabaseHelper(context).writableDatabase.insertWebPage(
+                        KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY, title, url
+                    )
+                } catch (e: SQLException) {
+                    Toast.makeText(context, "Database Unavailable", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 }
 
