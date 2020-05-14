@@ -18,10 +18,9 @@
 
     <!-- Browsing Settings Preferences -->
     <string name="javascript_enabled">Enable JavaScript</string>
-    <string name="js_enable_summary">Enabling JavaScript may make the browser vulnerable to malicious attacks</string>
-    <string name="startup_tabs">Startup Tabs</string>
-    <string name="startup_tabs_on">Open tabs on startup</string>
-    <string name="startup_tabs_off">Do not open tabs on startup</string>
+    <string name="disable_javascript">Disable JavaScript</string>
+    <string name="js_disable_summary">Makes the browser more secure. You may lose some functionality.</string>
+    <string name="js_enable_summary">Web Pages will be able to execute JavaScript providing more functionality. May make the browser vulnerable.</string>
 
     <string name="preferred_search_engine_def_value">https://www.google.com/</string>
 

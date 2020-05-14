@@ -62,7 +62,7 @@ class WebViewTabFragment : Fragment() {
         webView.webViewClient = KeplerWebViewClient
 
         webView.settings.javaScriptEnabled =
-            settingsPreference.getBoolean("javascript_enabled", false)
+            !settingsPreference.getBoolean("javascript_enabled", false)
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)

@@ -23,16 +23,10 @@
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
-            app:key="@string/startup_tabs"
-            app:summaryOff="@string/startup_tabs_off"
-            app:summaryOn="@string/startup_tabs_on"
-            app:title="@string/startup_tabs"
-            app:useSimpleSummaryProvider="true" />
-
-        <SwitchPreferenceCompat
+            app:summaryOn="@string/js_enable_summary"
+            app:summaryOff="@string/js_disable_summary"
             app:key="@string/javascript_enabled"
-            app:summary="@string/js_enable_summary"
-            app:title="@string/javascript_enabled" />
+            app:title="@string/disable_javascript" />
 
     </PreferenceCategory>
 
