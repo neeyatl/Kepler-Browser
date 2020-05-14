@@ -40,8 +40,8 @@ class WebViewTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (url != null) webView.loadUrl(url)
-        else loadHomePage(webView)
+        if (!KeplerWebViewClient.isPageLoaded)
+            if (url != null) webView.loadUrl(url) else loadHomePage(webView)
     }
 
     override fun onResume() {
