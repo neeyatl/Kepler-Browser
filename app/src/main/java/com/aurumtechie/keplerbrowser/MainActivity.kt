@@ -35,6 +35,13 @@ class MainActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        SettingsActivity.changeThemeForPreference(
+            settingsPreference,
+            getString(R.string.dark_theme),
+            resources.getStringArray(R.array.dark_mode_values)
+        )
+
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(defaultToolbar)
