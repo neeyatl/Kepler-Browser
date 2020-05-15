@@ -2,6 +2,8 @@ package com.aurumtechie.keplerbrowser
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Message
 import android.util.AttributeSet
@@ -113,16 +115,23 @@ class NestedScrollWebView(context: Context, attrs: AttributeSet) : WebView(conte
     )
 }
 
-object KeplerWebViewClient : WebViewClient() {
+class KeplerWebViewClient : WebViewClient() {
 
     var isPageLoaded: Boolean = false
 
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
         url?.let {
-            if (it.startsWith("https://")) {
+            if (it.startsWith("http://") || it.startsWith("https://")) {
                 view?.loadUrl(url)
                 CookieManager.getInstance().setAcceptCookie(true)
-            }
+            } else view?.context?.startActivity(
+                Intent.createChooser(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(it)
+                    ), view.context.getString(R.string.open_using)
+                )
+            )
         }
         return false
     }

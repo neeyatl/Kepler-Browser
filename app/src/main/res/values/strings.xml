@@ -44,4 +44,5 @@
     <string name="clear_history">Clear History</string>
     <string name="delete">Delete</string>
     <string name="are_you_sure">Are you sure? You cannot undo it.</string>
+    <string name="open_using">Open using…</string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
@@ -16,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_web_view_tab.*
 class WebViewTabFragment : Fragment() {
 
     var url: String? = null
+    private val keplerWebViewClient = KeplerWebViewClient()
 
     private val settingsPreference: SharedPreferences by lazy {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -31,16 +33,17 @@ class WebViewTabFragment : Fragment() {
     ): View? {
         val nestedScrollingWebView: WebView =
             inflater.inflate(R.layout.fragment_web_view_tab, container, false) as WebView
+
+        setUpWebView(nestedScrollingWebView, keplerWebViewClient)
+
         if (savedInstanceState != null)
             nestedScrollingWebView.restoreState(savedInstanceState)
-        else
-            setUpWebView(nestedScrollingWebView)
         return nestedScrollingWebView
     }
 
     override fun onStart() {
         super.onStart()
-        if (!KeplerWebViewClient.isPageLoaded)
+        if (!keplerWebViewClient.isPageLoaded)
             if (url != null) webView.loadUrl(url) else loadHomePage(webView)
     }
 
@@ -57,9 +60,9 @@ class WebViewTabFragment : Fragment() {
         )
     )
 
-    private fun setUpWebView(webView: WebView) {
+    private fun setUpWebView(webView: WebView, webViewClient: WebViewClient) {
         webView.webChromeClient = activity?.progressBar?.let { KeplerWebChromeClient(it) }
-        webView.webViewClient = KeplerWebViewClient
+        webView.webViewClient = webViewClient
 
         webView.settings.javaScriptEnabled =
             !settingsPreference.getBoolean("javascript_enabled", false)
