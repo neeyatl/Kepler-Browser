@@ -61,7 +61,7 @@ class AllOpenTabsRecyclerViewAdapter(
     override fun getItemCount(): Int = openTabs.size
 
     override fun onBindViewHolder(holder: WebViewTabHolder, position: Int) {
-        holder.itemView.tabFragmentView.addView(openTabs[position].view)
+        holder.itemView.tabContainer.addView(openTabs[position].view)
         holder.itemView.setOnClickListener { onTabClickListener.onTabClick(it, position) }
     }
 }
