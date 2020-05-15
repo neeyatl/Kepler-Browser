@@ -60,6 +60,21 @@ class MainActivity : AppCompatActivity(),
                 .commit()
     }
 
+    override fun onBackPressed() {
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.tabContainer)
+        if (currentFragment is WebViewTabFragment) {
+            if (currentFragment.webView.canGoBack()) currentFragment.webView.goBack()
+        } else {
+            super.onBackPressed() // Pop fragment back stack
+            super.onBackPressed() // exit application
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (supportFragmentManager.backStackEntryCount == 0) startNewTab()
+    }
+
     fun onSearchButtonClicked(view: View) {
         view.startAnimation(buttonClick)
         defaultToolbar.visibility = Toolbar.GONE
