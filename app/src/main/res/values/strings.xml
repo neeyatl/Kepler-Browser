@@ -41,4 +41,7 @@
     <string name="successfully_added">Successfully Added!</string>
     <string name="undo">UNDO</string>
     <string name="undone">Undone!</string>
+    <string name="clear_history">Clear History</string>
+    <string name="delete">Delete</string>
+    <string name="are_you_sure">Are you sure? You cannot undo it.</string>
 </resources>

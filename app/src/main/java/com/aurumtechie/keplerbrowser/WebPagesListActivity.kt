@@ -1,14 +1,14 @@
 package com.aurumtechie.keplerbrowser
 
 import android.annotation.SuppressLint
+import android.database.Cursor
 import android.database.sqlite.SQLiteException
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.ListFragment
@@ -20,6 +20,10 @@ import kotlinx.coroutines.withContext
 
 class WebPagesListActivity : AppCompatActivity() {
 
+    private val selectTitle: String by lazy {
+        intent?.getStringExtra(EXTRA_STRING)?.toString() ?: "Error"
+    }
+
     companion object {
         const val EXTRA_STRING = "WebPagesListActivity"
     }
@@ -30,7 +34,6 @@ class WebPagesListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val selectTitle = intent?.extras?.get(EXTRA_STRING) as String
         supportActionBar?.title = selectTitle
 
         if (selectTitle != getString(R.string.saved_pages))
@@ -41,6 +44,53 @@ class WebPagesListActivity : AppCompatActivity() {
             listFragmentContainer.addView(TextView(this).apply {
                 text = getString(R.string.saved_pages)
             })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        if (selectTitle == KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table)
+            menuInflater.inflate(R.menu.history, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.clear_history -> {
+            AlertDialog.Builder(this).setMessage(getString(R.string.are_you_sure))
+                .setPositiveButton(getString(R.string.delete)) { d, _ ->
+                    CoroutineScope(Dispatchers.Default).launch {
+                        try {
+                            KeplerDatabaseHelper(this@WebPagesListActivity).writableDatabase.delete(
+                                KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table,
+                                null,
+                                null
+                            )
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@WebPagesListActivity,
+                                    "Successfully Deleted!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: SQLiteException) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@WebPagesListActivity,
+                                    "Database Unavailable: Couldn't delete",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            e.printStackTrace()
+                        }
+                    }
+                    // Update the screen after deleting the history
+                    (supportFragmentManager
+                        .findFragmentById(R.id.listFragmentContainer) as WebPagesListFragment)
+                        .changeCursor()
+                    d.dismiss()
+                }.setNegativeButton(getString(android.R.string.cancel)) { d, _ -> d.dismiss() }
+                .show()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
@@ -66,23 +116,7 @@ class WebPagesListFragment : ListFragment() {
         val progressBar = ProgressBar(context).apply { visibility = ProgressBar.VISIBLE }
 
         CoroutineScope(Dispatchers.Default).launch {
-            @SuppressLint("Recycle")
-            val cursor = try {
-                context?.let { KeplerDatabaseHelper(it) }?.readableDatabase?.query(
-                    table,
-                    arrayOf("_id", "title", "url"),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-            } catch (e: SQLiteException) {
-                Toast.makeText(context, "Database Unavailable: ${e.message}", Toast.LENGTH_SHORT)
-                    .show()
-                e.printStackTrace()
-                null
-            }
+            val cursor = getNewCursor()
 
             withContext(Dispatchers.Main) {
                 progressBar.visibility = ProgressBar.GONE
@@ -96,5 +130,33 @@ class WebPagesListFragment : ListFragment() {
             }
         }
         return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    // To make fetching a new cursor easier when history is deleted and the screen needs an update
+    @SuppressLint("Recycle")
+    private suspend fun getNewCursor(): Cursor? = try {
+        context?.let { KeplerDatabaseHelper(it) }?.readableDatabase?.query(
+            table,
+            arrayOf("_id", "title", "url"),
+            null, null,
+            null, null, null
+        )
+    } catch (e: SQLiteException) {
+        withContext(Dispatchers.Main) {
+            Toast.makeText(
+                context,
+                "Database Unavailable",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        e.printStackTrace()
+        null
+    }
+
+    // Changes the existing cursor with a new one
+    fun changeCursor() {
+        CoroutineScope(Dispatchers.Main).launch {
+            (this@WebPagesListFragment.listAdapter as SimpleCursorAdapter).changeCursor(getNewCursor())
+        }
     }
 }

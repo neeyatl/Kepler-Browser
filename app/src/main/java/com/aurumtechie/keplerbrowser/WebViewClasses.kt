@@ -2,7 +2,6 @@ package com.aurumtechie.keplerbrowser
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Message
 import android.util.AttributeSet
@@ -117,7 +116,6 @@ class NestedScrollWebView(context: Context, attrs: AttributeSet) : WebView(conte
 object KeplerWebViewClient : WebViewClient() {
 
     var isPageLoaded: Boolean = false
-    var loadUrl: String? = null
 
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
         url?.let {
@@ -127,11 +125,6 @@ object KeplerWebViewClient : WebViewClient() {
             }
         }
         return false
-    }
-
-    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-        super.onPageStarted(view, url, favicon)
-        loadUrl = url
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
@@ -149,8 +142,8 @@ object KeplerWebViewClient : WebViewClient() {
                     e.printStackTrace()
                 }
             }
-
-            loadUrl?.let { isPageLoaded = it == url }
+            // A flag to mark that the page has finished loading
+            isPageLoaded = true
         }
     }
 }
