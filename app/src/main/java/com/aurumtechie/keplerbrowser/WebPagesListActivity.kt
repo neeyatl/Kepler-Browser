@@ -12,6 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.ListFragment
+import androidx.preference.PreferenceManager
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_web_pages_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,14 +38,25 @@ class WebPagesListActivity : AppCompatActivity() {
 
         supportActionBar?.title = selectTitle
 
+        if (selectTitle == KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table &&
+            PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(getString(R.string.private_mode), false)
+        ) Snackbar.make(
+            listFragmentContainer,
+            getString(R.string.private_mode_is_on),
+            Snackbar.LENGTH_LONG
+        ).show()
+
         if (selectTitle != getString(R.string.saved_pages))
             supportFragmentManager.beginTransaction()
-                .replace(R.id.listFragmentContainer, WebPagesListFragment.getInstance(selectTitle))
-                .commit()
-        else
-            listFragmentContainer.addView(TextView(this).apply {
-                text = getString(R.string.saved_pages)
-            })
+                .replace(
+                    R.id.listFragmentContainer,
+                    WebPagesListFragment.getInstance(selectTitle)
+                ).commit()
+        else listFragmentContainer.addView(TextView(this).apply {
+            text = getString(R.string.saved_pages)
+            textSize = 26F
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -60,8 +73,7 @@ class WebPagesListActivity : AppCompatActivity() {
                         try {
                             KeplerDatabaseHelper(this@WebPagesListActivity).writableDatabase.delete(
                                 KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY.table,
-                                null,
-                                null
+                                null, null
                             )
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
@@ -139,7 +151,8 @@ class WebPagesListFragment : ListFragment() {
             table,
             arrayOf("_id", "title", "url"),
             null, null,
-            null, null, null
+            null, null,
+            "timeInMillis DESC" // Sorting based on time and showing the most recent results
         )
     } catch (e: SQLiteException) {
         withContext(Dispatchers.Main) {

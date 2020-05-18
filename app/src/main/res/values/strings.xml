@@ -19,6 +19,11 @@
     <!-- Browsing Settings Preferences -->
     <string name="javascript_enabled">Enable JavaScript</string>
     <string name="disable_javascript">Disable JavaScript</string>
+    <string name="private_mode">Private Mode</string>
+
+    <string name="private_mode_summary_off">Browsing History will not be saved</string>
+    <string name="private_mode_summary_on">Disable Private Mode to save browsing history</string>
+
     <string name="js_disable_summary">Makes the browser more secure. You may lose some functionality.</string>
     <string name="js_enable_summary">Web Pages will be able to execute JavaScript providing more functionality. May make the browser vulnerable.</string>
 
@@ -45,4 +50,5 @@
     <string name="delete">Delete</string>
     <string name="are_you_sure">Are you sure? You cannot undo it.</string>
     <string name="open_using">Open using…</string>
+    <string name="private_mode_is_on">Private mode is turned ON</string>
 </resources>

@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.core.view.NestedScrollingChild2
 import androidx.core.view.NestedScrollingChildHelper
 import androidx.core.view.ViewCompat
+import androidx.preference.PreferenceManager
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -141,7 +142,10 @@ class KeplerWebViewClient : WebViewClient() {
         if (view != null && url != null) {
             val context = view.context
             val title = view.title
-            CoroutineScope(Dispatchers.Default).launch {
+            // Don't save history when private mode is "ON"
+            if (!PreferenceManager.getDefaultSharedPreferences(view.context)
+                    .getBoolean(view.context.getString(R.string.private_mode), false)
+            ) CoroutineScope(Dispatchers.Default).launch {
                 try {
                     KeplerDatabaseHelper(context).writableDatabase.insertWebPage(
                         KeplerDatabaseHelper.Companion.WebPageListItems.HISTORY, title, url

@@ -22,10 +22,16 @@
             app:title="@string/preferred_search_engine"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreference
+            app:key="@string/private_mode"
+            app:summaryOff="@string/private_mode_summary_off"
+            app:summaryOn="@string/private_mode_summary_on"
+            app:title="@string/private_mode" />
+
         <SwitchPreferenceCompat
-            app:summaryOn="@string/js_enable_summary"
-            app:summaryOff="@string/js_disable_summary"
             app:key="@string/javascript_enabled"
+            app:summaryOff="@string/js_disable_summary"
+            app:summaryOn="@string/js_enable_summary"
             app:title="@string/disable_javascript" />
 
     </PreferenceCategory>
