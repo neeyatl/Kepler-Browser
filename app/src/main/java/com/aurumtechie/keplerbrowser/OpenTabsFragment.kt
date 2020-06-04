@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import androidx.core.view.isNotEmpty
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,8 +22,6 @@ class OpenTabsFragment(private val openTabs: List<WebViewTabFragment>) : Fragmen
         super.onAttach(context)
         onTabClickListener = context as AllOpenTabsRecyclerViewAdapter.Companion.OnTabClickListener
     }
-
-    // TODO: USE this as a tabs selection menu by adding it to the bottom bar for allowing navigation
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,7 +60,17 @@ class AllOpenTabsRecyclerViewAdapter(
     override fun getItemCount(): Int = openTabs.size
 
     override fun onBindViewHolder(holder: WebViewTabHolder, position: Int) {
-        holder.itemView.tabContainer.addView(openTabs[position].view)
+        val webViewTabFragment = openTabs[position]
+        // Add the WebView to the FrameLayout for displaying
+        val webViewItemContainer = holder.itemView.webViewItem
+        if (webViewItemContainer.isNotEmpty()) webViewItemContainer.removeAllViews()
+        webViewItemContainer.addView(webViewTabFragment.view)
+
+        // Display Web Page title and url
+        holder.itemView.title.text = (webViewTabFragment.view as WebView).title
+        holder.itemView.url.text = (webViewTabFragment.view as WebView).url
+
+        // Handle click events
         holder.itemView.setOnClickListener { onTabClickListener.onTabClick(it, position) }
     }
 }

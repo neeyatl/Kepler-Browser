@@ -5,14 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Message
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.webkit.CookieManager
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.NestedScrollingChild2
@@ -175,14 +171,11 @@ class KeplerWebChromeClient(private val progressBar: ProgressBar) : WebChromeCli
             progressBar.visibility = ProgressBar.VISIBLE
     }
 
-    //  TODO: Create a new window and open the link there
-    override fun onCreateWindow(
+    override fun onJsAlert(
         view: WebView?,
-        isDialog: Boolean,
-        isUserGesture: Boolean,
-        resultMsg: Message?
-    ): Boolean {
-        if (!isUserGesture) return false
-        return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
-    }
+        url: String?,
+        message: String?,
+        result: JsResult?
+    ): Boolean = false
+
 }
