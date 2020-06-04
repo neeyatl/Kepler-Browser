@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
+import com.aurumtechie.keplerbrowser.ConnectivityHelper.WEB_URL_REGEX
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.insertWebPage
 import com.aurumtechie.keplerbrowser.KeplerDatabaseHelper.Companion.removeWebPage
 import com.aurumtechie.keplerbrowser.WebPagesListActivity.Companion.EXTRA_STRING
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity(),
     private fun onSearchStarted(view: View) {
         view.startAnimation(buttonClick)
         try {
-            if (!ConnectivityHelper.isConnectedToNetwork(this@MainActivity)) {
+            if (!ConnectivityHelper.isConnectedToNetwork(view.context)) {
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                     .hideSoftInputFromWindow(searchEditText.windowToken, 0)
                 Snackbar.make(view, R.string.check_connection, Snackbar.LENGTH_LONG).show()
@@ -100,35 +101,27 @@ class MainActivity : AppCompatActivity(),
                     .hideSoftInputFromWindow(searchEditText.windowToken, 0)
 
                 val userInput = searchEditText.text.toString()
-                if (!userInput.contains("."))
+                if (userInput.matches(WEB_URL_REGEX)) {
                     webView.loadUrl(
-                        "${settingsPreference.getString(
-                            resources.getString(R.string.preferred_search_engine),
-                            resources.getString(R.string.preferred_search_engine_def_value)
-                        )}search?q=${userInput.replace(
-                            " ",
-                            "+"
-                        )}"
+                        // If a protocol is not mentioned, default it to https
+                        if (userInput.matches(ConnectivityHelper.URL_PROTOCOL_CHECK_REGEX))
+                            userInput else "https://$userInput"
                     )
-                else
-                    webView.loadUrl("https://www.$userInput")
+                } else webView.loadUrl(
+                    "${settingsPreference.getString(
+                        resources.getString(R.string.preferred_search_engine),
+                        resources.getString(R.string.preferred_search_engine_def_value)
+                    )}search?q=${userInput.replace(
+                        " ",
+                        "+"
+                    )}"
+                )
             }
         } catch (e: Exception) {
-            Toast.makeText(this@MainActivity, R.string.check_connection, Toast.LENGTH_SHORT)
-                .show()
             e.printStackTrace()
+            Snackbar.make(view, R.string.check_connection, Snackbar.LENGTH_SHORT)
+                .show()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        //TODO: Perform search on activity passed intent
-        data?.getStringExtra("search")
-            ?.let { url ->
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.tabContainer, WebViewTabFragment.getInstance(url))
-                    .addToBackStack(null).commit()
-            }
     }
 
     fun onPreviousClicked(view: View) {
@@ -278,6 +271,7 @@ class MainActivity : AppCompatActivity(),
 
     fun onCancelSearchClicked(view: View) {
         view.startAnimation(buttonClick)
+        searchEditText.setText("")
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
             .apply { if (isActive) hideSoftInputFromWindow(searchEditText.windowToken, 0) }
         switchActionBar()
