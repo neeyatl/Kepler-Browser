@@ -64,12 +64,18 @@ class WebViewTabFragment : Fragment() {
         webView.webChromeClient = activity?.progressBar?.let { KeplerWebChromeClient(it) }
         webView.webViewClient = webViewClient
 
-        webView.settings.javaScriptEnabled =
-            !settingsPreference.getBoolean("javascript_enabled", false)
-        webView.settings.useWideViewPort = true
-        webView.settings.loadWithOverviewMode = true
-        webView.settings.setSupportZoom(true)
-        webView.settings.setSupportMultipleWindows(true)
+        webView.settings.apply {
+            javaScriptEnabled =
+                !settingsPreference.getBoolean("javascript_enabled", false)
+            useWideViewPort = true
+            loadWithOverviewMode = true
+
+            domStorageEnabled = true
+
+            setSupportZoom(true)
+            setSupportMultipleWindows(true)
+        }
+
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
         webView.setBackgroundColor(Color.WHITE)
     }
