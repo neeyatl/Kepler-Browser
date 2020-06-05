@@ -11,6 +11,16 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_settings">Settings</string>
 
+    <string name="successfully_added">Successfully Added!</string>
+    <string name="undo">UNDO</string>
+    <string name="undone">Undone!</string>
+    <string name="clear_history">Clear History</string>
+    <string name="delete">Delete</string>
+    <string name="are_you_sure">Are you sure? You cannot undo it.</string>
+    <string name="open_using">Open using…</string>
+    <string name="private_mode_is_on">Private mode is turned ON</string>
+    <string name="press_back_again_to_close_app">Press back again to close the application</string>
+
     <!-- Preference Titles -->
     <string name="browsing_settings">Browsing Settings</string>
     <string name="theme_preference">Theme Preference</string>
@@ -42,13 +52,4 @@
     <string name="save_page">Save Page</string>
     <string name="new_tab">New Tab</string>
     <string name="clear_all_tabs">Clear All Tabs</string>
-
-    <string name="successfully_added">Successfully Added!</string>
-    <string name="undo">UNDO</string>
-    <string name="undone">Undone!</string>
-    <string name="clear_history">Clear History</string>
-    <string name="delete">Delete</string>
-    <string name="are_you_sure">Are you sure? You cannot undo it.</string>
-    <string name="open_using">Open using…</string>
-    <string name="private_mode_is_on">Private mode is turned ON</string>
 </resources>

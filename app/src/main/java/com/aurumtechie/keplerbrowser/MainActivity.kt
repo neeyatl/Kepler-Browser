@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteException
 import android.os.Bundle
+import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity(),
 
     private val buttonClick = AlphaAnimation(0.2F, 1F).apply { duration = 100 }
 
+    private var exitOnDoubleBackPressed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,21 +62,48 @@ class MainActivity : AppCompatActivity(),
                 .replace(R.id.tabContainer, WebViewTabFragment())
                 .addToBackStack(null)
                 .commit()
+        // If saved instance state is not null, the saved fragments will automatically be used
     }
 
     override fun onBackPressed() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.tabContainer)
-        if (currentFragment is WebViewTabFragment) {
-            if (currentFragment.webView.canGoBack()) currentFragment.webView.goBack()
-        } else {
-            super.onBackPressed() // Pop fragment back stack
-            super.onBackPressed() // exit application
-        }
+        if (currentFragment != null) // Current fragment cannot be null. At least one fragment will be present at all times.
+            if (currentFragment is WebViewTabFragment) {
+                // if webView.canGoBack then goBack else exit app
+                if (currentFragment.webView.canGoBack()) currentFragment.webView.goBack()
+                else exitOnDoubleBackPressed(webView)
+            } else // if current fragment isn't WebViewTabFragment which means it's OpenTabsFragment, in which case you exit the app.
+                exitOnDoubleBackPressed(tabContainer)
+        else super.onBackPressed()
     }
 
     override fun onStart() {
         super.onStart()
         if (supportFragmentManager.backStackEntryCount == 0) startNewTab()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        supportFragmentManager.findFragmentById(R.id.tabContainer)?.let {
+            supportFragmentManager.saveFragmentInstanceState(it)
+        }
+    }
+
+    private fun exitOnDoubleBackPressed(view: View) {
+        if (exitOnDoubleBackPressed) // Exit the application
+            startActivity(Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }).also { finish() }
+
+        exitOnDoubleBackPressed = true
+        Snackbar.make(
+            view,
+            R.string.press_back_again_to_close_app,
+            Snackbar.LENGTH_SHORT
+        ).show()
+        // If the user doesn't press back within the next 2 seconds, change back.
+        Handler().postDelayed({ exitOnDoubleBackPressed = false }, 2 * 1000)
     }
 
     fun onSearchButtonClicked(view: View) {
