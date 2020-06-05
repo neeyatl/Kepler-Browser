@@ -180,6 +180,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onTabClick(view: View, position: Int) {
+        supportFragmentManager.popBackStack() // Remove the openTabsFragment before replacing the top of the stack with the selected fragment
+
         supportFragmentManager.beginTransaction()
             .replace(R.id.tabContainer, supportFragmentManager.fragments[position])
             .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE) }
