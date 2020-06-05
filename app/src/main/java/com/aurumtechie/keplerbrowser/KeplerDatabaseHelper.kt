@@ -35,14 +35,16 @@ class KeplerDatabaseHelper(context: Context) :
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        updateDatabase(db!!, 0, DB_VERSION)
+        if (db != null)
+            updateDatabase(db, 0)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        updateDatabase(db!!, oldVersion, newVersion)
+        if (db != null)
+            updateDatabase(db, oldVersion)
     }
 
-    private fun updateDatabase(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    private fun updateDatabase(db: SQLiteDatabase, oldVersion: Int) {
         if (oldVersion < 1) {
             db.execSQL("CREATE TABLE Bookmarks (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
             db.execSQL("CREATE TABLE History (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, url TEXT, timeInMillis INTEGER);")
