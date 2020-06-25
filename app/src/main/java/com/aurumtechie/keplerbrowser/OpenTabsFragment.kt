@@ -61,14 +61,15 @@ class AllOpenTabsRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: WebViewTabHolder, position: Int) {
         val webViewTabFragment = openTabs[position]
+        val webView = webViewTabFragment.view as WebView
         // Add the WebView to the FrameLayout for displaying
         val webViewItemContainer = holder.itemView.webViewItem
         if (webViewItemContainer.isNotEmpty()) webViewItemContainer.removeAllViews()
-        webViewItemContainer.addView(webViewTabFragment.view)
+        webViewItemContainer.addView(webView)
 
         // Display Web Page title and url
-        holder.itemView.title.text = (webViewTabFragment.view as WebView).title
-        holder.itemView.url.text = (webViewTabFragment.view as WebView).url
+        holder.itemView.title.text = webView.title
+        holder.itemView.url.text = webView.url
 
         // Handle click events
         holder.itemView.setOnClickListener { onTabClickListener.onTabClick(it, position) }

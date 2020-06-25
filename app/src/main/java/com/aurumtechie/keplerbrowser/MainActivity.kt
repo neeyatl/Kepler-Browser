@@ -1,9 +1,15 @@
+@file:Suppress("BlockingMethodInNonBlockingContext")
+
 package com.aurumtechie.keplerbrowser
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteException
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -11,8 +17,12 @@ import android.view.animation.AlphaAnimation
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
 import com.aurumtechie.keplerbrowser.ConnectivityHelper.WEB_URL_REGEX
@@ -26,13 +36,22 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileWriter
+import java.net.URL
 
 class MainActivity : AppCompatActivity(),
     AllOpenTabsRecyclerViewAdapter.Companion.OnTabClickListener {
 
+    companion object {
+        private const val REQUEST_CODE = 4579
+    }
+
     private val settingsPreference by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     private val buttonClick = AlphaAnimation(0.2F, 1F).apply { duration = 100 }
+
+    private var exitOnDoubleBackPressed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,21 +78,48 @@ class MainActivity : AppCompatActivity(),
                 .replace(R.id.tabContainer, WebViewTabFragment())
                 .addToBackStack(null)
                 .commit()
+        // If saved instance state is not null, the saved fragments will automatically be used
     }
 
     override fun onBackPressed() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.tabContainer)
-        if (currentFragment is WebViewTabFragment) {
-            if (currentFragment.webView.canGoBack()) currentFragment.webView.goBack()
-        } else {
-            super.onBackPressed() // Pop fragment back stack
-            super.onBackPressed() // exit application
-        }
+        if (currentFragment != null) // Current fragment cannot be null. At least one fragment will be present at all times.
+            if (currentFragment is WebViewTabFragment) {
+                // if webView.canGoBack then goBack else exit app
+                if (currentFragment.webView.canGoBack()) currentFragment.webView.goBack()
+                else exitOnDoubleBackPressed(webView)
+            } else // if current fragment isn't WebViewTabFragment which means it's OpenTabsFragment, in which case you exit the app.
+                exitOnDoubleBackPressed(tabContainer)
+        else super.onBackPressed()
     }
 
     override fun onStart() {
         super.onStart()
         if (supportFragmentManager.backStackEntryCount == 0) startNewTab()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        supportFragmentManager.findFragmentById(R.id.tabContainer)?.let {
+            supportFragmentManager.saveFragmentInstanceState(it)
+        }
+    }
+
+    private fun exitOnDoubleBackPressed(view: View) {
+        if (exitOnDoubleBackPressed) // Exit the application
+            startActivity(Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }).also { finish() }
+
+        exitOnDoubleBackPressed = true
+        Snackbar.make(
+            view,
+            R.string.press_back_again_to_close_app,
+            Snackbar.LENGTH_SHORT
+        ).show()
+        // If the user doesn't press back within the next 2 seconds, change back.
+        Handler().postDelayed({ exitOnDoubleBackPressed = false }, 2 * 1000)
     }
 
     fun onSearchButtonClicked(view: View) {
@@ -150,6 +196,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onTabClick(view: View, position: Int) {
+        supportFragmentManager.popBackStack() // Remove the openTabsFragment before replacing the top of the stack with the selected fragment
+
         supportFragmentManager.beginTransaction()
             .replace(R.id.tabContainer, supportFragmentManager.fragments[position])
             .apply { setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE) }
@@ -254,20 +302,127 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            this,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    ) // If permission was denied once before but the user wasn't informed why the permission is necessary, do so.
+                        AlertDialog.Builder(this)
+                            .setMessage(R.string.external_storage_permission_rationale)
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                dialog.dismiss()
+                                requestExternalStoragePermission()
+                            }.show()
+                    else /* If user has chosen to not be shown permission requests any longer,
+                     inform the user about it's importance and redirect her/him to device settings
+                     so that permissions can be given */
+                        requestPermissionAndOpenSettings()
+            }
+        }
+    }
+
     fun onSavePageClicked(view: View) {
         view.startAnimation(buttonClick)
-//        val webView =
-//            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
-//        val title = webView.title
-//        val url = webView.url
-        // TODO: Download file using Coroutines
-//        CoroutineScope(Dispatchers.Default).launch {
-//            try {
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//        }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) requestExternalStoragePermission()
+
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+        val fileName = "/storage/emulated/0/Download/${webView.title}.html"
+        val urlString = webView.url.toString()
+
+        Toast.makeText(view.context, R.string.downloading_file, Toast.LENGTH_SHORT).show()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Create a URL object
+                val url = URL(urlString)
+                // Create a buffered reader object using the url object
+                val reader = url.openStream().bufferedReader()
+
+                // Enter filename in which you want to download
+                val downloadFile = File(fileName).also { it.createNewFile() }
+                // Create a buffered writer object for the file
+                val writer = FileWriter(downloadFile).buffered()
+
+                // read and write each line from the stream till the end
+                var line: String
+                while (reader.readLine().also { line = it?.toString() ?: "" } != null)
+                    writer.write(line)
+
+                // Close all open streams
+                reader.close()
+                writer.close()
+
+                // Update UI for download is successful
+                withContext(Dispatchers.Main) {
+                    // Show a message for when the app is successfully downloaded
+                    // Also provide an action to view the downloaded file
+                    Snackbar.make(
+                        view,
+                        R.string.file_downloaded_successfully,
+                        Snackbar.LENGTH_LONG
+                    ).setAction(R.string.view) {
+                        it.context.startActivity(
+                            Intent.createChooser(
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(
+                                        downloadFile.toUri(),
+                                        "text/plain"
+                                    )
+                                },
+                                view.context.getString(R.string.open_using)
+                            )
+                        )
+                    }.show()
+                }
+
+            } catch (e: Exception) {
+                // Update UI for download has failed
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(view, R.string.download_failed, Snackbar.LENGTH_SHORT).show()
+
+                    // File is downloaded incompletely in case of a download fail. Delete this file.
+                    val incompleteFile = File(fileName)
+                    if (incompleteFile.exists()) incompleteFile.delete()
+
+                    e.printStackTrace()
+                }
+            }
+        }
     }
+
+    private fun requestExternalStoragePermission() = ActivityCompat.requestPermissions(
+        this,
+        arrayOf(
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ),
+        REQUEST_CODE
+    )
+
+    private fun requestPermissionAndOpenSettings() = AlertDialog.Builder(this)
+        .setMessage(R.string.permission_request)
+        .setPositiveButton(R.string.show_settings) { dialog, _ ->
+            dialog.dismiss()
+            // Open application settings to enable the user to toggle the permission settings
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            })
+        }.show()
 
     fun onCancelSearchClicked(view: View) {
         view.startAnimation(buttonClick)
