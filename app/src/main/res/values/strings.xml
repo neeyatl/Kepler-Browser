@@ -21,6 +21,10 @@
     <string name="private_mode_is_on">Private mode is turned ON</string>
     <string name="press_back_again_to_close_app">Press back again to close the application</string>
 
+    <string name="file_downloaded_successfully">File Downloaded Successfully</string>
+    <string name="download_failed">Download Failed</string>
+    <string name="downloading_file">Downloading file…</string>
+
     <!-- Preference Titles -->
     <string name="browsing_settings">Browsing Settings</string>
     <string name="theme_preference">Theme Preference</string>
@@ -52,4 +56,11 @@
     <string name="save_page">Save Page</string>
     <string name="new_tab">New Tab</string>
     <string name="clear_all_tabs">Clear All Tabs</string>
+    <string name="view">View</string>
+
+    <!-- Permission Request Strings -->
+    <string name="external_storage_permission_rationale">The app will not be able to read/write files if the storage permission is denied. Please enable it in settings.</string>
+    <string name="permission_request">Read External Storage is a crucial permission for the app\'s functionality. Please enable it in your settings to be able to use this app.</string>
+    <string name="show_settings">Show Settings</string>
+
 </resources>

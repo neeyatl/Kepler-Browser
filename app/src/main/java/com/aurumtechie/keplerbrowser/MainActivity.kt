@@ -1,10 +1,15 @@
+@file:Suppress("BlockingMethodInNonBlockingContext")
+
 package com.aurumtechie.keplerbrowser
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteException
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -12,8 +17,12 @@ import android.view.animation.AlphaAnimation
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
 import com.aurumtechie.keplerbrowser.ConnectivityHelper.WEB_URL_REGEX
@@ -27,9 +36,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileWriter
+import java.net.URL
 
 class MainActivity : AppCompatActivity(),
     AllOpenTabsRecyclerViewAdapter.Companion.OnTabClickListener {
+
+    companion object {
+        private const val REQUEST_CODE = 4579
+    }
 
     private val settingsPreference by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
@@ -286,20 +302,127 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            this,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    ) // If permission was denied once before but the user wasn't informed why the permission is necessary, do so.
+                        AlertDialog.Builder(this)
+                            .setMessage(R.string.external_storage_permission_rationale)
+                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                dialog.dismiss()
+                                requestExternalStoragePermission()
+                            }.show()
+                    else /* If user has chosen to not be shown permission requests any longer,
+                     inform the user about it's importance and redirect her/him to device settings
+                     so that permissions can be given */
+                        requestPermissionAndOpenSettings()
+            }
+        }
+    }
+
     fun onSavePageClicked(view: View) {
         view.startAnimation(buttonClick)
-//        val webView =
-//            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
-//        val title = webView.title
-//        val url = webView.url
-        // TODO: Download file using Coroutines
-//        CoroutineScope(Dispatchers.Default).launch {
-//            try {
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//        }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) requestExternalStoragePermission()
+
+        val webView =
+            (supportFragmentManager.findFragmentById(R.id.tabContainer) as WebViewTabFragment).webView
+        val fileName = "/storage/emulated/0/Download/${webView.title}.html"
+        val urlString = webView.url.toString()
+
+        Toast.makeText(view.context, R.string.downloading_file, Toast.LENGTH_SHORT).show()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Create a URL object
+                val url = URL(urlString)
+                // Create a buffered reader object using the url object
+                val reader = url.openStream().bufferedReader()
+
+                // Enter filename in which you want to download
+                val downloadFile = File(fileName).also { it.createNewFile() }
+                // Create a buffered writer object for the file
+                val writer = FileWriter(downloadFile).buffered()
+
+                // read and write each line from the stream till the end
+                var line: String
+                while (reader.readLine().also { line = it?.toString() ?: "" } != null)
+                    writer.write(line)
+
+                // Close all open streams
+                reader.close()
+                writer.close()
+
+                // Update UI for download is successful
+                withContext(Dispatchers.Main) {
+                    // Show a message for when the app is successfully downloaded
+                    // Also provide an action to view the downloaded file
+                    Snackbar.make(
+                        view,
+                        R.string.file_downloaded_successfully,
+                        Snackbar.LENGTH_LONG
+                    ).setAction(R.string.view) {
+                        it.context.startActivity(
+                            Intent.createChooser(
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(
+                                        downloadFile.toUri(),
+                                        "text/plain"
+                                    )
+                                },
+                                view.context.getString(R.string.open_using)
+                            )
+                        )
+                    }.show()
+                }
+
+            } catch (e: Exception) {
+                // Update UI for download has failed
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(view, R.string.download_failed, Snackbar.LENGTH_SHORT).show()
+
+                    // File is downloaded incompletely in case of a download fail. Delete this file.
+                    val incompleteFile = File(fileName)
+                    if (incompleteFile.exists()) incompleteFile.delete()
+
+                    e.printStackTrace()
+                }
+            }
+        }
     }
+
+    private fun requestExternalStoragePermission() = ActivityCompat.requestPermissions(
+        this,
+        arrayOf(
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ),
+        REQUEST_CODE
+    )
+
+    private fun requestPermissionAndOpenSettings() = AlertDialog.Builder(this)
+        .setMessage(R.string.permission_request)
+        .setPositiveButton(R.string.show_settings) { dialog, _ ->
+            dialog.dismiss()
+            // Open application settings to enable the user to toggle the permission settings
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            })
+        }.show()
 
     fun onCancelSearchClicked(view: View) {
         view.startAnimation(buttonClick)
